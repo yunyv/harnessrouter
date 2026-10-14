@@ -488,7 +488,7 @@ export function useConversationTurn({ harnessId, sessionId, target, onRan, onSes
   // The settled read. A turn that settled on the SSE path holds only what was streamed; what it
   // took and cost is written by the gateway at settle, a moment after the terminal event. One
   // read (and one retry, since the persist can trail the event by a couple of seconds) folds
-  // those figures into the last answer, so the per-turn line appears without a reload.
+  // those figures and any missed output files into the last answer without a reload.
   const settledRead = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (busy) return;
@@ -513,6 +513,7 @@ export function useConversationTurn({ harnessId, sessionId, target, onRan, onSes
             for (let i = out.length - 1; i >= 0; i--) {
               if (out[i].role === 'assistant') {
                 out[i] = { ...(out[i] as AsstMsg),
+                  files: (t.files || []).reduce(withFile, (out[i] as AsstMsg).files),
                   elapsed: typeof t.elapsed === 'number' ? t.elapsed : undefined,
                   credits: typeof t.credits === 'number' ? t.credits : undefined };
                 break;
